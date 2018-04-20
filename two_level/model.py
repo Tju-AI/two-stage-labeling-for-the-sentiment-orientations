@@ -238,27 +238,6 @@ def clearn_data(comment,label):
             graph.append(sentence[:5]+sentence[-5:])
             graph_label.append(label[i])
     return graph,graph_label
-
-
-def train_lstm_3(x_train,y_train,x_test,y_test):
-    print('Defining a Simple Keras Model...')
-    a = Input(shape=(10,269+1*size))
-    x = Bidirectional(LSTM(units=50,return_sequences=True))(a)
-    print(np.shape(x))
-    x = Bidirectional(LSTM(units=50))(x)
-    print(np.shape(x))
-    x = Dropout(0.3)(x)
-    x = Dense(1)(x)
-    y = Activation('sigmoid')(x)
-    model = Model(inputs=a, outputs=y)
-    print('Compiling the Model...')
-    model.compile(loss='mean_squared_error',
-                  optimizer='adam',metrics=['accuracy'])
-    print("Train...")
-    earlyStopping = callbacks.EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-    saveBestModel = callbacks.ModelCheckpoint('lstm_data/graph_model.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
-    model.fit(x_train, y_train, batch_size=batch_size, nb_epoch=n_epoch,verbose=1, validation_data=(x_test, y_test),callbacks=[earlyStopping, saveBestModel])
-    print('Model saved')
 def clearn_test_data(comment): 
     graph = []
     for i in range(len(comment)):
@@ -334,6 +313,8 @@ def get_embedding_2(graph,graph_char):
 #    score = model.predict(comment_embed)
     score_f=score_feature(score)
     feature_vec = get_vec.predict(comment_embed)
+    feature_vec=[list(feature_vec[i][maxlen-1]) for i in range(len(feature_vec))]
+    feature_vec=np.array(feature_vec)
     new_feature = np.concatenate((feature_vec,score_f,special_f),axis=1)
     embedding = np.zeros((len(graph),10,new_feature.shape[1])) 
     count = 0
