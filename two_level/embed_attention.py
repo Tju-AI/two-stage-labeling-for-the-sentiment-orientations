@@ -253,31 +253,6 @@ def split_train_test(embed_weight,asp_weight,y):
     x_train,x_test,asp_train,asp_test, y_train, y_test = train_test_split(embed_weight,asp_weight,y, test_size=0.2)
     print(x_train.shape,y_train.shape)
     return x_train,x_test,asp_train,asp_test, y_train, y_test
-def train_lstm(x_train,asp_train,y_train,asp_test,x_test,y_test):
-    print(x_train.shape,y_train.shape)
-    print('Defining a Simple Keras Model...')
-    a = Input(shape=(15,100+8*size))
-    b = Input(shape=(15,8*size))
-    print('a:',np.shape(a))
-    print('b:',np.shape(b))
-    activations1 = Bidirectional(LSTM(units=50,return_sequences=True))(a)
-#    print(np.shape(x))
-    activations = Bidirectional(LSTM(units=50,return_sequences=True))(activations1)
-    act = Bidirectional(LSTM(units=50))(activations1)
-    output = Dense(1)(act)
-    output = Activation('sigmoid')(output)
-    print('output:',np.shape(output))
-    model = Model(inputs=[a,b], outputs=output)
-    print('Compiling the Model...')
-    model.compile(loss='mean_squared_error',
-                  optimizer='adam',metrics=['accuracy'])
-    print("Train...")
-    earlyStopping = callbacks.EarlyStopping(monitor='val_loss', patience=4, verbose=1, mode='auto')
-    saveBestModel = callbacks.ModelCheckpoint('lstm_data/vision7_word.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
-    model.fit([x_train,asp_train], y_train, batch_size=batch_size, epochs=n_epoch,verbose=1, validation_data=([x_test,asp_test], y_test),callbacks=[earlyStopping, saveBestModel]) 
-    out = Model(inputs=a, outputs=act)
-    out.save('lstm_data/output_100.h5')
-    
 #ASPECT ATTENTION
 def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     print(x_train.shape,y_train.shape)
@@ -292,10 +267,8 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     act = Bidirectional(LSTM(units=50))(activations1)
     print('l:',np.shape(act))
 #    activations =LSTM(units=50,return_sequences=True)(a)
-    print('lstm:',np.shape(activations))
-    hidden = TimeDistributed(Dense(100, activation='tanh'))(activations)
-    print('hiden:',np.shape(hidden))
-    hid_b =concatenate([hidden,b])
+    print('lstm:',np.shape(activations)
+    hid_b =concatenate([activations,b])
     print('hid_b:',np.shape(hid_b))
     attention1 = Dense(1, activation='softmax')(hid_b)
     
@@ -308,12 +281,6 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     attention = Permute([2, 1])(attention4)
     print('attention:',np.shape(attention))
     attention_mul = multiply([activations, attention])
-    attention_mul=merge([activations, attention], output_shape=25, mode='mul')
-    
-#    attention5 = Permute([2, 1])(attention1)
-#    print('attention:',np.shape(attention5))
-#    Mydot = Lambda(lambda x: K.batch_dot(x[0],x[1]))
-#    attention_mul = Mydot([attention5, hidden])
     
     print('merge:',np.shape(attention_mul))
     at_done = Flatten()(attention_mul)
