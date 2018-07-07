@@ -269,18 +269,16 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     print('hid_b:',np.shape(hid_b))
     attention1 = Dense(1, activation='softmax')(hid_b)
     
-    print('attention1:',np.shape(attention1))
-    attention2 = Flatten()(attention1)
-    print('attention2:',np.shape(attention2))
-    attention3 = Activation('softmax')(attention2)
-    attention4 = RepeatVector(100)(attention3)
-    print('attention4:',np.shape(attention4))
-    attention = Permute([2, 1])(attention4)
-    print('attention:',np.shape(attention))
-    attention_mul = multiply([activations, attention])
+    att = Flatten()(attention1)
+    att_value = Activation('softmax')(att)
+    print('att_value:',np.shape(att_value))
     
-    print('merge:',np.shape(attention_mul))
-    at_done = Flatten()(attention_mul)
+    att_vec = RepeatVector(1)(att_value)
+    print('att_vec:',np.shape(att_vec))
+    att_mul=Mydot([att_vec, hidden])
+    print('att_mul:',np.shape(att_mul))
+   
+    at_done = Flatten()(att_mul)
     print('out:',np.shape(at_done))
     output = Dropout(0.3)(at_done)
     output = Dense(1)(output)
@@ -294,8 +292,7 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     earlyStopping = callbacks.EarlyStopping(monitor='val_loss', patience=4, verbose=1, mode='auto')
     saveBestModel = callbacks.ModelCheckpoint('lstm_data/vision7_word.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
     model.fit([x_train,asp_train], y_train, batch_size=batch_size, epochs=n_epoch,verbose=1, validation_data=([x_test,asp_test], y_test),callbacks=[earlyStopping, saveBestModel]) 
-    output = Model(inputs=a, outputs=activations)
-    output.save('lstm_data/output_100.h5')
+ 
 def read_test_data(path):
     data=pd.read_csv(path,encoding='gbk')
     comment =np.array(data.loc[:,['comment']])
