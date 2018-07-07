@@ -306,15 +306,14 @@ def get_embedding_2(graph,graph_char):
     special_f = get_feature_2(sentence_data)
     print('loading model......')
     model = load_model('lstm_data/vision7_word.h5')
-    get_vec = load_model('lstm_data/output_100.h5')
+    get_vec2 = Model(inputs=model.input,
+                    outputs=model.get_layer('flatten_2').output)
     comment_embed,comment_aspect=embedding_word(sentence_data,sen_char)
 #    comment_embed,comment_aspect=embedding_zi(sentence_data,sen_char)
     score = model.predict([comment_embed,comment_aspect])
-#    score = model.predict(comment_embed)
+
     score_f=score_feature(score)
-    feature_vec = get_vec.predict(comment_embed)
-    feature_vec=[list(feature_vec[i][maxlen-1]) for i in range(len(feature_vec))]
-    feature_vec=np.array(feature_vec)
+    feature_vec = get_vec.predict([comment_embed,comment_aspect]）
     new_feature = np.concatenate((feature_vec,score_f,special_f),axis=1)
     embedding = np.zeros((len(graph),10,new_feature.shape[1])) 
     count = 0
