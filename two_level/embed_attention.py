@@ -264,9 +264,6 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     activations1 = Bidirectional(LSTM(units=50,return_sequences=True))(a)
 #    print(np.shape(x))
     activations = Bidirectional(LSTM(units=50,return_sequences=True))(activations1)
-    act = Bidirectional(LSTM(units=50))(activations1)
-    print('l:',np.shape(act))
-#    activations =LSTM(units=50,return_sequences=True)(a)
     print('lstm:',np.shape(activations)
     hid_b =concatenate([activations,b])
     print('hid_b:',np.shape(hid_b))
@@ -297,7 +294,7 @@ def train_lstm2(x_train,asp_train,y_train,asp_test,x_test,y_test):
     earlyStopping = callbacks.EarlyStopping(monitor='val_loss', patience=4, verbose=1, mode='auto')
     saveBestModel = callbacks.ModelCheckpoint('lstm_data/vision7_word.h5', monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
     model.fit([x_train,asp_train], y_train, batch_size=batch_size, epochs=n_epoch,verbose=1, validation_data=([x_test,asp_test], y_test),callbacks=[earlyStopping, saveBestModel]) 
-    output = Model(inputs=a, outputs=act)
+    output = Model(inputs=a, outputs=activations)
     output.save('lstm_data/output_100.h5')
 def read_test_data(path):
     data=pd.read_csv(path,encoding='gbk')
